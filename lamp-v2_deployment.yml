@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web
+  labels:
+    app: web
+spec:
+  replicas: 10
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: php-example
+  template:
+    metadata:
+      labels:
+        app: php-example
+        version: v.2.0
+    spec:
+      containers:
+      - name: php70
+        image: php:7.0-apache
+        ports:
+        - name: http
+          containerPort: 80
+        livenessProbe:
+          httpGet:
+            path: /
+            port: http
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        volumeMounts:
+        - mountPath: /var/www/html
+          name: config
+      volumes:
+        - name: config
+          configMap:
+            name: php-info
+            items:
+            - key: index.php
+              path: index.php
+
